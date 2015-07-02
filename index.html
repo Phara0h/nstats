@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Nstats by Phara0h</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Nstats</h1>
+        <p>A fast and compact way to get all your network and process stats for your node application</p>
+
+        <p class="view"><a href="https://github.com/Phara0h/nstats">View the Project on GitHub <small>Phara0h/nstats</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/Phara0h/nstats/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/Phara0h/nstats/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/Phara0h/nstats">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="nstats" class="anchor" href="#nstats" aria-hidden="true"><span class="octicon octicon-link"></span></a>Nstats</h1>
+
+<p>A fast and compact way to get all your network and process stats for your node application. Websocket and express compatible!</p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<div class="highlight highlight-bash"><pre>$ npm install nstats</pre></div>
+
+<h2>
+<a id="quick-start" class="anchor" href="#quick-start" aria-hidden="true"><span class="octicon octicon-link"></span></a>Quick Start</h2>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-c">// ws is a websocket server (ws.js)</span>
+<span class="pl-k">var</span> stats <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>nstats<span class="pl-pds">'</span></span>)(ws.clients);
+
+<span class="pl-c">//use it with express</span>
+app.use(stats.express);
+
+<span class="pl-c">//display the stats!</span>
+<span class="pl-en">console</span><span class="pl-c1">.log</span>(stats.<span class="pl-c1">data</span>); <span class="pl-c">// non-stringifyed</span>
+<span class="pl-en">console</span><span class="pl-c1">.log</span>(stats.toJson()) <span class="pl-c">// stringifyed</span></pre></div>
+
+<h2>
+<a id="properties" class="anchor" href="#properties" aria-hidden="true"><span class="octicon octicon-link"></span></a>Properties</h2>
+
+<h4>
+<a id="statsdata" class="anchor" href="#statsdata" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>stats.data</code>
+</h4>
+
+<p>The <code>stats.data</code> object is a JavaScript object containing all the stats.</p>
+
+<div class="highlight highlight-js"><pre>{
+  uptime<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  totalMemory<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  totalOnlineUsers<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  avgWriteKBs<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  avgReadKBs<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  avgPacketsSecond<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  bytesWritten<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  totalBytesWritten<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  totalMBytesWritten<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  bytesRead<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  totalBytesRead<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  totalMBytesRead<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  writeKBS<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  readKBS<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+  totalPackets<span class="pl-k">:</span> <span class="pl-c1">0</span>
+}</pre></div>
+
+<p>feel free to add your own stats you want to keep track off too!</p>
+
+<div class="highlight highlight-js"><pre>stats.<span class="pl-c1">data</span>[<span class="pl-s"><span class="pl-pds">'</span>foo<span class="pl-pds">'</span></span>] <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>some dank stat<span class="pl-pds">"</span></span>;</pre></div>
+
+<hr>
+
+<h4>
+<a id="statsinterval" class="anchor" href="#statsinterval" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>stats.interval</code>
+</h4>
+
+<p>A time in milliseconds on when the stats will refresh and calculate.</p>
+
+<div class="highlight highlight-js"><pre>stats.interval <span class="pl-k">=</span> <span class="pl-c1">5000</span>; <span class="pl-c">// default is 1 second</span></pre></div>
+
+<p>Set this to 0 if you do not want it to loop.</p>
+
+<h2>
+<a id="methods" class="anchor" href="#methods" aria-hidden="true"><span class="octicon octicon-link"></span></a>Methods</h2>
+
+<p><code>stats.addWeb()</code></p>
+
+<p>A method to add network usage for http requests not done with express.</p>
+
+<div class="highlight highlight-js"><pre>http.get(<span class="pl-s"><span class="pl-pds">"</span>http://google.com<span class="pl-pds">"</span></span>, <span class="pl-k">function</span>(<span class="pl-smi">res</span>) {
+    res.on(<span class="pl-s"><span class="pl-pds">'</span>end<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>() {
+      stats.addWeb(res);
+    });
+});</pre></div>
+
+<p>Since its not express, it does not know about it.</p>
+
+<hr>
+
+<p><code>stats.calc()</code></p>
+
+<p>A method to allow you to manually trigger when the stats are computed.</p>
+
+<p>optional call back can be passed to let you know its done.</p>
+
+<div class="highlight highlight-js"><pre>stats.calc(<span class="pl-k">function</span>(){
+  <span class="pl-c">//its done!</span>
+  <span class="pl-en">console</span><span class="pl-c1">.log</span>(stats.<span class="pl-c1">data</span>);
+});</pre></div>
+
+<hr>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/Phara0h">Phara0h</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
