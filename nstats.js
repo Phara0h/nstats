@@ -4,6 +4,7 @@ var _ = require('underscore')._;
 function Nstats(clients) {
 
   var stats = this;
+  var lastCalc = 0;
 
   stats.interval = 1000;
   stats.data = {
@@ -79,6 +80,7 @@ function Nstats(clients) {
       process.nextTick(function() {
         var w = 0;
         var r = 0;
+
         for (var i in clients) {
           if (clients[i] !== null) {
             try {
@@ -100,8 +102,11 @@ function Nstats(clients) {
           }
         }
 
-        stats.data.writeKBS = Number(Math.abs((w - stats.data.bytesWritten) / 1024)).toFixed(2);
-        stats.data.readKBS = Number(Math.abs((r - stats.data.bytesRead) / 1024)).toFixed(2);
+        if(lastCalc > 0)
+          lastCalc = Number(((_.now() - lastCalc)) / 1000);
+
+        stats.data.writeKBS = Number(Math.abs(((w - stats.data.bytesWritten) / 1024)/lastCalc)).toFixed(2);
+        stats.data.readKBS = Number(Math.abs(((r - stats.data.bytesRead) / 1024)/lastCalc)).toFixed(2);
 
         stats.data.totalBytesRead += Math.abs(r - stats.data.bytesRead);
         stats.data.totalBytesWritten += Math.abs(w - stats.data.bytesWritten);
@@ -124,8 +129,11 @@ function Nstats(clients) {
         if(stats.interval > 0)
           setTimeout(stats.calc, stats.interval);
 
+        lastCalc = _.now();
     });
-  }
+  };
+  stats.calc();
+
 
   return stats;
 }
