@@ -13,7 +13,7 @@ $ npm install nstats
 var stats = require('nstats')(ws.clients);
 
 //use it with express
-app.use(stats.express);
+app.use(stats.express());
 
 //display the stats!
 console.log(stats.data); // non-stringifyed

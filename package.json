@@ -1,6 +1,6 @@
 {
   "name": "nstats",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A fast and compact way to get all your network and process stats for your node application.",
   "main": "nstats.js",
   "scripts": {
@@ -20,13 +20,14 @@
     "uptime",
     "usage"
   ],
+  "engines" : {
+    "node" : ">=4.3.2"
+  },
+  "engineStrict" : true,
   "author": "Jt Whissel",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Phara0h/nstats/issues"
   },
-  "homepage": "https://github.com/Phara0h/nstats",
-  "dependencies": {
-    "underscore": "^1.8.3"
-  }
+  "homepage": "https://github.com/Phara0h/nstats"
 }
