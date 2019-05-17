@@ -1,5 +1,5 @@
 # Nstats
-A fast and compact way to get all your network and process stats for your node application. Websocket and express compatible!
+A fast and compact way to get all your network and process stats for your node application. Websocket, http/s, express and prometheus compatible!
 
 ## Installation
 
@@ -9,8 +9,8 @@ $ npm install nstats
 ## Quick Start
 
 ```javascript
-// ws is a websocket server (ws.js)
-var stats = require('nstats')(ws.clients);
+// ws is a websocket server (ws.js) and httpServer is an http or https node server.
+var stats = require('nstats')(ws, httpServer);
 
 //use it with express
 app.use(stats.express());
@@ -18,6 +18,7 @@ app.use(stats.express());
 //display the stats!
 console.log(stats.data); // non-stringifyed
 console.log(stats.toJson()) // stringifyed
+console.log(stats.toPrometheus()) //  prometheus format
 ```
 
 ##Properties
@@ -29,19 +30,20 @@ The `stats.data` object is a JavaScript object containing all the stats.
 {
   uptime: 0,
   totalMemory: 0,
-  totalOnlineUsers: 0,
+  activeSockets: 0,
   avgWriteKBs: 0,
   avgReadKBs: 0,
   avgPacketsSecond: 0,
-  bytesWritten: 0,
   totalBytesWritten: 0,
   totalMBytesWritten: 0,
-  bytesRead: 0,
   totalBytesRead: 0,
   totalMBytesRead: 0,
   writeKBS: 0,
   readKBS: 0,
-  totalPackets: 0
+  packetsSecond: 0,
+  totalPackets: 0,
+  http: {
+  }
 }
 ```
 feel free to add your own stats you want to keep track off too!
@@ -60,19 +62,27 @@ stats.interval = 5000; // default is 1 second
 ```
 Set this to 0 if you do not want it to loop.
 
-##Methods####
-`stats.addWeb()`
-
-A method to add network usage for http requests not done with express.
+####`stats.serverName`
+name that will be added to the tag for prometheus output.
 
 ```js
-http.get("http://google.com", function(res) {
+stats.serverName = "SomeName"; // default is 1 "default"
+```
+
+##Methods####
+`stats.addWeb(req,res)`
+
+A method to add network usage for http requests not done with express or w.s.
+res is optional if you want stats.data.http data.
+
+```js
+var req = http.get("http://google.com", function(res) {
     res.on('end', function() {
-      stats.addWeb(res);
+      stats.addWeb(req, res);
     });
 });
 ```
-Since its not express, it does not know about it.
+Since its not express or ws, it does not know about it.
 
 ---
 `stats.calc()`
