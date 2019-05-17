@@ -3,7 +3,6 @@ class NStats
 
   constructor(ws, httpServer)
   {
-
     this.clients =  ws.clients || null;
     this.httpServer = httpServer;
     this.lastCalc = 0;
@@ -14,6 +13,12 @@ class NStats
       uptime: 0,
       totalMemory: 0,
       activeSockets: 0,
+      responseOverhead: {
+        avg: 0,
+        highest: 0,
+        lowest: 9999,
+        total: 0
+      },
       avgWriteKBs: 0,
       avgReadKBs: 0,
       avgPacketsSecond: 0,
@@ -44,13 +49,29 @@ class NStats
   {
     return (req, res, next) =>
     {
-      res.on("finish", ()=>{this.addWeb(req,res)});
+      var sTime = process.hrtime.bigint();
+      res.on("finish", ()=>{this.addWeb(req,res, sTime)});
        next();
     };
   }
 
-  addWeb(req,res)
+  addWeb(req,res,sTime)
   {
+    if(sTime)
+    {
+      var sTimeMS = Number(process.hrtime.bigint() - sTime)/1000000;
+      this.data.responseOverhead.total += sTimeMS;
+
+      if(this.data.responseOverhead.highest < sTimeMS)
+      {
+        this.data.responseOverhead.highest = sTimeMS;
+      }
+      else if(this.data.responseOverhead.lowest > sTimeMS)
+      {
+        this.data.responseOverhead.lowest = sTimeMS;
+      }
+
+    }
     this._pdata.bytesRead += req.socket.bytesRead-(req.socket['nstats_bytesRead'] || 0)
     this._pdata.bytesWritten += req.socket.bytesWritten-(req.socket['nstats_bytesWritten'] || 0);
     req.socket['nstats_bytesRead'] = req.socket.bytesRead;
@@ -189,6 +210,8 @@ nstats_${this.serverName}_http{method="${methods[i]}",status="${status[j]}"} ${(
       this.data.packetsSecond = Number(Math.abs((w - this._pdata.packets) / this.lastCalc)).toFixed(2);
       this._pdata.packets = 0;
 
+      this.data.responseOverhead.avg = (this.data.responseOverhead.total / this.data.totalPackets);
+
       if(this.httpServer)
       {
         this.httpServer.getConnections((err,count)=>
@@ -228,7 +251,10 @@ nstats_${this.serverName}_http{method="${methods[i]}",status="${status[j]}"} ${(
       if (typeof obj[key] === 'object' && obj[key] !== null) {
         keystr+=key+'_';
         Object.assign(flattened, this._flattenObjectPrometheus(obj[key],keystr))
-      } else {
+        keystr="";
+      }
+      else
+      {
         if(keystr.indexOf('http') == -1)
         {
           flattened[keystr+key] = obj[key]

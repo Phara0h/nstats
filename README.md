@@ -28,22 +28,31 @@ The `stats.data` object is a JavaScript object containing all the stats.
 
 ```js
 {
-  uptime: 0,
-  totalMemory: 0,
-  activeSockets: 0,
-  avgWriteKBs: 0,
-  avgReadKBs: 0,
-  avgPacketsSecond: 0,
-  totalBytesWritten: 0,
-  totalMBytesWritten: 0,
-  totalBytesRead: 0,
-  totalMBytesRead: 0,
-  writeKBS: 0,
-  readKBS: 0,
-  packetsSecond: 0,
-  totalPackets: 0,
-  http: {
-  }
+    "uptime": 209.653,
+    "totalMemory": "29.17",
+    "activeSockets": 2,
+    "responseOverhead": {
+        "avg": 0.5810644392156861,
+        "highest": 5.175994,
+        "lowest": 0.260562,
+        "total": 148.17143199999995
+    },
+    "avgWriteKBs": "3.26",
+    "avgReadKBs": "0.28",
+    "avgPacketsSecond": "1.22",
+    "totalBytesWritten": 700381,
+    "totalMBytesWritten": 0.67,
+    "totalBytesRead": 60813,
+    "totalMBytesRead": 0.06,
+    "writeKBS": "0.00",
+    "readKBS": "0.00",
+    "packetsSecond": "0.00",
+    "totalPackets": 255,
+    "http": {
+        "GET": {
+            "200": 255
+        }
+    }
 }
 ```
 feel free to add your own stats you want to keep track off too!
@@ -70,10 +79,11 @@ stats.serverName = "SomeName"; // default is 1 "default"
 ```
 
 ##Methods####
-`stats.addWeb(req,res)`
+`stats.addWeb(req,res,sTime)`
 
 A method to add network usage for http requests not done with express or w.s.
 res is optional if you want stats.data.http data.
+sTime (The start time of when you received the req BigInt) is optional if you want responseOverhead data.
 
 ```js
 var req = http.get("http://google.com", function(res) {
