@@ -20,7 +20,39 @@ console.log(stats.data); // non-stringifyed
 console.log(stats.toJson()) // stringifyed
 console.log(stats.toPrometheus()) //  prometheus format
 ```
+## Example
 
+```js
+const express = require('express');
+const nstats = require('nstats');
+const WebSocket = require('ws');
+const app = express();
+const server = require('http').createServer(app);
+const port = 3042;
+const wss = new WebSocket.Server({ server });
+
+var stats = require('nstats')(wss, server);
+stats.interval = 500;
+stats.serverName = "TestServer";
+
+wss.on('connection', function connection(ws) {
+  ws.on('message', function incoming(message) {
+      ws.send(message);
+  });
+});
+
+app.use(stats.express());
+
+app.get('/', (req, res) => res.send());
+app.get('/metrics', (req, res) => res.send(stats.toPrometheus()));
+app.get('/stats', (req, res) => {
+  res.type('json')
+  stats.calc(()=>res.send(stats.toJson()));
+});
+
+server.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+```
 ##Properties
 
 ####`stats.data`
@@ -78,7 +110,7 @@ name that will be added to the tag for prometheus output.
 stats.serverName = "SomeName"; // default is 1 "default"
 ```
 
-##Methods####
+##Methods
 `stats.addWeb(req,res,sTime)`
 
 A method to add network usage for http requests not done with express or w.s.
