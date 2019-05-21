@@ -103,13 +103,6 @@ stats.interval = 5000; // default is 1 second
 ```
 Set this to 0 if you do not want it to loop.
 
-####`stats.serverName`
-name that will be added to the tag for prometheus output.
-
-```js
-stats.serverName = "SomeName"; // default is 1 "default"
-```
-
 ##Methods
 `stats.addWeb(req,res,sTime)`
 

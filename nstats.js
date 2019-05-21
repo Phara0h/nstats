@@ -5,7 +5,6 @@ class NStats
     this.clients = ws.clients || null;
     this.httpServer = httpServer;
     this.lastCalc = 0;
-    this.serverName = "default";
 
     this.interval = 1000;
     this.data = {
@@ -108,17 +107,17 @@ class NStats
       if(keys[i].indexOf('http') == -1)
       {
         pstring += `
-# HELP nstats_${this.serverName}_${keys[i]} nstats metric
-# TYPE nstats_${this.serverName}_${keys[i]} counter
-nstats_${this.serverName}_${keys[i]} ${flatData[keys[i]]} ${Date.now()}`;
+# HELP nstats_${keys[i]} nstats metric
+# TYPE nstats_${keys[i]} counter
+nstats_${keys[i]} ${flatData[keys[i]]} ${Date.now()}`;
       }
     }
 
     if(this.data.http)
     {
       pstring += `
-# HELP nstats_${this.serverName}_http nstats metric
-# TYPE nstats_${this.serverName}_http gauge`;
+# HELP nstats_http nstats metric
+# TYPE nstats_http gauge`;
       var methods = Object.keys(this.data.http);
       for(var i = 0; i < methods.length; i++)
       {
@@ -126,7 +125,7 @@ nstats_${this.serverName}_${keys[i]} ${flatData[keys[i]]} ${Date.now()}`;
         for(var j = 0; j < status.length; j++)
         {
           pstring += `
-nstats_${this.serverName}_http{method="${methods[i]}",status="${status[j]}"} ${(this.data.http[methods[i]])[status[j]]} ${Date.now()}`;
+nstats_http{method="${methods[i]}",status="${status[j]}"} ${(this.data.http[methods[i]])[status[j]]} ${Date.now()}`;
         }
       }
     }
