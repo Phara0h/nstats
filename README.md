@@ -20,6 +20,11 @@ console.log(stats.data); // non-stringifyed
 console.log(stats.toJson()) // stringifyed
 console.log(stats.toPrometheus()) //  prometheus format
 ```
+
+## Grafana Sample
+Import the Grafana Dashboard example inside the Grafana folder to view the the stats
+in a graph like manner.
+
 ## Example
 
 ```js

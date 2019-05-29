@@ -18,6 +18,60 @@ class NStats
         lowest: 9999,
         total: 0
       },
+      responseOverheadHistogram:
+      {
+        bucket: [
+        {
+          count: 0,
+          check: 0.01
+        },
+        {
+          count: 0,
+          check: 0.05
+        },
+        {
+          count: 0,
+          check: 0.1
+        },
+        {
+          count: 0,
+          check: 0.2
+        },
+        {
+          count: 0,
+          check: 0.3
+        },
+        {
+          count: 0,
+          check: 0.4
+        },
+        {
+          count: 0,
+          check: 0.5
+        },
+        {
+          count: 0,
+          check: 0.6
+        },
+        {
+          count: 0,
+          check: 0.7
+        },
+        {
+          count: 0,
+          check: 0.8
+        },
+        {
+          count: 0,
+          check: 0.9
+        },
+        {
+          count: 0,
+          check: 1
+        }],
+        sum: 0,
+        count: 0
+      },
       avgWriteKBs: 0,
       avgReadKBs: 0,
       avgPacketsSecond: 0,
@@ -60,18 +114,9 @@ class NStats
     if(sTime)
     {
       var sTimeMS = Number(process.hrtime.bigint() - sTime) / 1000000;
-      this.data.responseOverhead.total += sTimeMS;
-
-      if(this.data.responseOverhead.highest < sTimeMS)
-      {
-        this.data.responseOverhead.highest = sTimeMS;
-      }
-      else if(this.data.responseOverhead.lowest > sTimeMS)
-      {
-        this.data.responseOverhead.lowest = sTimeMS;
-      }
-
+      this._calcOverhead(sTimeMS);
     }
+
     this._pdata.bytesRead += req.socket.bytesRead - (req.socket['nstats_bytesRead'] || 0)
     this._pdata.bytesWritten += req.socket.bytesWritten - (req.socket['nstats_bytesWritten'] || 0);
     req.socket['nstats_bytesRead'] = req.socket.bytesRead;
@@ -104,7 +149,7 @@ class NStats
 
     for(var i = 0; i < keys.length; i++)
     {
-      if(keys[i].indexOf('http') == -1)
+      if(keys[i].indexOf('http') == -1 && keys[i].indexOf('responseOverheadHistogram') == -1)
       {
         pstring += `
 # HELP nstats_${keys[i]} nstats metric
@@ -117,7 +162,7 @@ nstats_${keys[i]} ${flatData[keys[i]]} ${Date.now()}`;
     {
       pstring += `
 # HELP nstats_http nstats metric
-# TYPE nstats_http gauge`;
+# TYPE nstats_http counter`;
       var methods = Object.keys(this.data.http);
       for(var i = 0; i < methods.length; i++)
       {
@@ -125,9 +170,28 @@ nstats_${keys[i]} ${flatData[keys[i]]} ${Date.now()}`;
         for(var j = 0; j < status.length; j++)
         {
           pstring += `
-nstats_http{method="${methods[i]}",status="${status[j]}"} ${(this.data.http[methods[i]])[status[j]]} ${Date.now()}`;
+nstats_http{method="${methods[i]}",status="${status[j]}"} ${(this.data.http[methods[i]])[status[j]]}`;
         }
       }
+    }
+
+    if(this.data.responseOverheadHistogram)
+    {
+      pstring += `
+# HELP nstats_responseOverheadHistogram nstats metric
+# TYPE nstats_responseOverheadHistogram histogram
+`;
+      for(var i = 0; i < this.data.responseOverheadHistogram.bucket.length; i++)
+      {
+        pstring += `
+nstats_responseOverheadHistogram_bucket{le="${this.data.responseOverheadHistogram.bucket[i].check}"} ${this.data.responseOverheadHistogram.bucket[i].count}`;
+
+      }
+      pstring += `
+nstats_responseOverheadHistogram_bucket{le="+Inf"} ${this.data.responseOverheadHistogram.count}
+nstats_responseOverheadHistogram_sum ${this.data.responseOverheadHistogram.sum}
+nstats_responseOverheadHistogram_count ${this.data.responseOverheadHistogram.count}
+`;
     }
 
     return pstring;
@@ -272,7 +336,37 @@ nstats_http{method="${methods[i]}",status="${status[j]}"} ${(this.data.http[meth
 
     return flattened
   }
+
+  _calcOverhead(time)
+  {
+    this.data.responseOverhead.total += time;
+
+    if(this.data.responseOverhead.highest < time)
+    {
+      this.data.responseOverhead.highest = time;
+    }
+    else if(this.data.responseOverhead.lowest > time)
+    {
+      this.data.responseOverhead.lowest = time;
+    }
+
+    var sec = time / 1000;
+
+    for(var i = 0; i < this.data.responseOverheadHistogram.bucket.length; i++)
+    {
+
+      if( sec <= this.data.responseOverheadHistogram.bucket[i].check)
+      {
+        this.data.responseOverheadHistogram.bucket[i].count++;
+      }
+    }
+
+    this.data.responseOverheadHistogram.sum += sec;
+    this.data.responseOverheadHistogram.count += 1;
+  }
 }
+
+
 
 var nstats;
 
