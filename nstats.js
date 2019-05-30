@@ -100,6 +100,10 @@ class NStats
   {
     return (req, res, next) =>
     {
+      if(!this.httpServer)
+      {
+        this.httpServer = req.connection.server;
+      }
       var sTime = process.hrtime.bigint();
       res.on("finish", () =>
       {
