@@ -1,3 +1,5 @@
+const fp = require('fastify-plugin')
+
 class NStats
 {
   constructor(ws, httpServer)
@@ -5,7 +7,7 @@ class NStats
     this.clients = ws.clients || null;
     this.httpServer = httpServer;
     this.lastCalc = 0;
-
+    this.ignored_routes = [];
     this.interval = 1000;
     this.data = {
       uptime: 0,
@@ -95,7 +97,34 @@ class NStats
 
     this.calc();
   }
+  fastify() {
 
+    return fp((fastify, opts, done) => {
+      this.ignored_routes = opts.ignored_routes || [];
+
+      fastify.addHook('onRequest', (req, res, next) => {
+        if (!this.httpServer) {
+
+          this.httpServer = req.raw.connection.server;
+        }
+
+        if(this.ignored_routes.indexOf(req.url) > -1){
+          next();
+          return;
+        }
+
+        var sTime = process.hrtime.bigint();
+        res.raw.on('finish', () => {
+          this.addWeb(req.raw, res.raw, sTime);
+        });
+        next();
+      });
+      done()
+    }, {
+      fastify: '3.x',
+      name: 'nstats'
+    });
+  }
   express(req, res, next)
   {
     return (req, res, next) =>

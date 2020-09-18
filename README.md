@@ -6,20 +6,45 @@ A fast and compact way to get all your network and process stats for your node a
 ```bash
 $ npm install nstats
 ```
-## Quick Start
+## Quick Start (Express)
 
 ```javascript
 // ws is a websocket server (ws.js) and httpServer is an http or https node server.
-var stats = require('nstats')(ws, httpServer);
+var nstats = require('nstats')(ws, httpServer);
 
 //use it with express
-app.use(stats.express());
+app.use(nstats.express());
 
 //display the stats!
-console.log(stats.data); // non-stringifyed
-console.log(stats.toJson()) // stringifyed
-console.log(stats.toPrometheus()) //  prometheus format
+console.log(nstats.data); // non-stringifyed
+console.log(nstats.toJson()) // stringifyed
+console.log(nstats.toPrometheus()) //  prometheus format
 ```
+
+## Quick Start (Fastify 3.x.x)
+
+```javascript
+// ws is a websocket server (ws.js) and httpServer is an http or https node server.
+var nstats = require('nstats')();
+
+//use it with express
+app.register(nstats.fastify(),{
+  ignored_routes:['/metrics','/health']
+});
+
+app.get('/metrics', (req, res) => {
+  res.code(200).send(nstats.toPrometheus());
+});
+
+app.get('/health', (req, res) => res.code(200).send('All Systems Nominal'));
+
+
+//display the stats!
+console.log(nstats.data); // non-stringifyed
+console.log(nstats.toJson()) // stringifyed
+console.log(nstats.toPrometheus()) //  prometheus format
+```
+
 
 ## Grafana Sample
 Import the Grafana Dashboard example inside the Grafana folder to view the the stats

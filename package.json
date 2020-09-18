@@ -31,5 +31,8 @@
   "bugs": {
     "url": "https://github.com/Phara0h/nstats/issues"
   },
-  "homepage": "https://github.com/Phara0h/nstats"
+  "homepage": "https://github.com/Phara0h/nstats",
+  "dependencies": {
+    "fastify-plugin": "^2.3.4"
+  }
 }
