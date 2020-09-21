@@ -187,7 +187,7 @@ class NStats
         pstring += `
 # HELP nstats_${keys[i]} nstats metric
 # TYPE nstats_${keys[i]} counter
-nstats_${keys[i]} ${flatData[keys[i]]} ${Date.now()}`;
+nstats_${keys[i]} ${flatData[keys[i]]}`;
       }
     }
 
