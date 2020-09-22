@@ -85,7 +85,7 @@ class NStats
       readKBS: 0,
       packetsSecond: 0,
       totalPackets: 0,
-      http:
+      http_requests:
       {}
     };
 
@@ -145,9 +145,33 @@ class NStats
 
   addWeb(req, res, sTime)
   {
+
+    if(res)
+    {
+      var routerPath = req.routerPath || '_nstats_na';
+
+      if(!this.data.http_requests[req.method]) {
+        this.data.http_requests[req.method] = {};
+      }
+
+      if(!this.data.http_requests[req.method][res.statusCode]) {
+        this.data.http_requests[req.method][res.statusCode] = {};
+      }
+
+      if(!this.data.http_requests[req.method][res.statusCode][routerPath]) {
+        this.data.http_requests[req.method][res.statusCode][routerPath] = {count:0,response:0};
+      }
+
+      this.data.http_requests[req.method][res.statusCode][routerPath].count++;
+
+    }
+
     if(sTime)
     {
       var sTimeMS = Number(process.hrtime.bigint() - sTime) / 1000000;
+      if(res) {
+        this.data.http_requests[req.method][res.statusCode][routerPath].response += sTimeMS;
+      }
       this._calcOverhead(sTimeMS);
     }
 
@@ -157,24 +181,7 @@ class NStats
     req.socket['nstats_bytesWritten'] = req.socket.bytesWritten;
     this.data.totalPackets++;
     this._pdata.packets++;
-    if(res)
-    {
-      var routerPath = req.routerPath || '_nstats_na';
 
-      if(!this.data.http[req.method]) {
-        this.data.http[req.method] = {};
-      }
-
-      if(!this.data.http[req.method][res.statusCode]) {
-        this.data.http[req.method][res.statusCode] = {};
-      }
-
-      if(!this.data.http[req.method][res.statusCode][routerPath]) {
-        this.data.http[req.method][res.statusCode][routerPath] = 0;
-      }
-
-      this.data.http[req.method][res.statusCode][routerPath]++;
-    }
   };
 
   toJson()
@@ -199,28 +206,28 @@ nstats_${keys[i]} ${flatData[keys[i]]}`;
       }
     }
 
-    if(this.data.http)
+    if(this.data.http_requests)
     {
-      pstring += `
-# HELP nstats_http nstats metric
-# TYPE nstats_http counter`;
-      var methods = Object.keys(this.data.http);
+      pstring += ``;
+      var methods = Object.keys(this.data.http_requests);
       for(var i = 0; i < methods.length; i++)
       {
-        var status = Object.keys(this.data.http[methods[i]]);
+        var status = Object.keys(this.data.http_requests[methods[i]]);
         for(var j = 0; j < status.length; j++)
         {
-          var routes = Object.keys(this.data.http[methods[i]][status[j]]);
+          var routes = Object.keys(this.data.http_requests[methods[i]][status[j]]);
           for (var k = 0; k < routes.length; k++) {
             var route = routes[k];
 
             if(route == '_nstats_na') {
               pstring += `
-nstats_http{method="${methods[i]}",status="${status[j]}"} ${(this.data.http[methods[i]])[status[j]]['_nstats_na']}`;
+nstats_http_request_count{method="${methods[i]}",status="${status[j]}"} ${(this.data.http_requests[methods[i]])[status[j]]['_nstats_na'].count}
+nstats_http_request_response_time_count{method="${methods[i]}",status="${status[j]}"} ${(this.data.http_requests[methods[i]])[status[j]]['_nstats_na'].response}`;
             }
             else {
               pstring += `
-nstats_http{method="${methods[i]}",status="${status[j]}",route="${route}"} ${(this.data.http[methods[i]])[status[j]][route]}`;
+nstats_http_request_count{method="${methods[i]}",status="${status[j]}",route="${route}"} ${(this.data.http_requests[methods[i]])[status[j]][route].count}
+nstats_http_request_response_time_count{method="${methods[i]}",status="${status[j]}",route="${route}"} ${(this.data.http_requests[methods[i]])[status[j]][route].response}`;
             }
 
           }
@@ -233,8 +240,7 @@ nstats_http{method="${methods[i]}",status="${status[j]}",route="${route}"} ${(th
     {
       pstring += `
 # HELP nstats_responseOverheadHistogram nstats metric
-# TYPE nstats_responseOverheadHistogram histogram
-`;
+# TYPE nstats_responseOverheadHistogram histogram`;
       for(var i = 0; i < this.data.responseOverheadHistogram.bucket.length; i++)
       {
         pstring += `
