@@ -115,6 +115,7 @@ class NStats
 
         var sTime = process.hrtime.bigint();
         res.raw.on('finish', () => {
+          req.raw.routerPath = req.routerPath;
           this.addWeb(req.raw, res.raw, sTime);
         });
         next();
@@ -158,14 +159,21 @@ class NStats
     this._pdata.packets++;
     if(res)
     {
+      var routerPath = req.routerPath || '_nstats_na';
 
-      if(!this.data.http[req.method])
+      if(!this.data.http[req.method]) {
         this.data.http[req.method] = {};
+      }
 
-      if(!this.data.http[req.method][res.statusCode])
-        this.data.http[req.method][res.statusCode] = 0;
+      if(!this.data.http[req.method][res.statusCode]) {
+        this.data.http[req.method][res.statusCode] = {};
+      }
 
-      this.data.http[req.method][res.statusCode]++;
+      if(!this.data.http[req.method][res.statusCode][routerPath]) {
+        this.data.http[req.method][res.statusCode][routerPath] = 0;
+      }
+
+      this.data.http[req.method][res.statusCode][routerPath]++;
     }
   };
 
@@ -202,8 +210,21 @@ nstats_${keys[i]} ${flatData[keys[i]]}`;
         var status = Object.keys(this.data.http[methods[i]]);
         for(var j = 0; j < status.length; j++)
         {
-          pstring += `
-nstats_http{method="${methods[i]}",status="${status[j]}"} ${(this.data.http[methods[i]])[status[j]]}`;
+          var routes = Object.keys(this.data.http[methods[i]][status[j]]);
+          for (var k = 0; k < routes.length; k++) {
+            var route = routes[k];
+
+            if(route == '_nstats_na') {
+              pstring += `
+nstats_http{method="${methods[i]}",status="${status[j]}"} ${(this.data.http[methods[i]])[status[j]]['_nstats_na']}`;
+            }
+            else {
+              pstring += `
+nstats_http{method="${methods[i]}",status="${status[j]}",route="${route}"} ${(this.data.http[methods[i]])[status[j]][route]}`;
+            }
+
+          }
+
         }
       }
     }
