@@ -311,7 +311,9 @@ nstats_responseOverheadHistogram_count ${this.data.responseOverheadHistogram.cou
       this.data.packetsSecond = Number(Math.abs((w - this._pdata.packets) / this.lastCalc)).toFixed(2);
       this._pdata.packets = 0;
 
-      this.data.responseOverhead.avg = (this.data.responseOverhead.total / this.data.totalPackets);
+      if(this.data.responseOverhead.total > 0) {
+        this.data.responseOverhead.avg = (this.data.responseOverhead.total / this.data.totalPackets);
+      }
 
       if(this.httpServer)
       {
