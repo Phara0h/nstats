@@ -2,7 +2,7 @@ const fp = require('fastify-plugin')
 
 class NStats
 {
-  constructor(ws, httpServer)
+  constructor(ws, httpServer, server_version)
   {
     this.clients = ws.clients || null;
     this.httpServer = httpServer;
@@ -10,6 +10,7 @@ class NStats
     this.ignored_routes = [];
     this.interval = 1000;
     this.data = {
+      server_version,
       uptime: 0,
       totalMemory: 0,
       activeSockets: 0,
@@ -431,14 +432,22 @@ nstats_responseOverheadHistogram_count ${this.data.responseOverheadHistogram.cou
 
 
 var nstats;
+const fs = require('fs');
 
-
-module.exports = function(ws, httpServer)
+module.exports = function(ws, httpServer, server_version)
 {
   if(!nstats)
   {
+    if(!server_version) {
+      try {
+        server_version = require(process.cwd()+'/package.json').version;
+      } catch (e) {
+        server_version = '0.0.0'
+      }
+    }
+
     nstats = new NStats(ws ||
-    {}, httpServer || null);
+    {}, httpServer || null, server_version);
   }
 
   return nstats;
