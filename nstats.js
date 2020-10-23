@@ -9,8 +9,17 @@ class NStats
     this.lastCalc = 0;
     this.ignored_routes = [];
     this.interval = 1000;
+    var pre_release = 0;
+    if(server_version.indexOf('-') > -1) {
+      var ssv = server_version.split('-');
+      server_version = ssv[0];
+      pre_release = ssv[1].replace(/[^0-9]/g, '');
+    }
     this.data = {
-      server_version,
+      server_version_major: Number(server_version.split('.')[0].replace(/[^0-9]/g, '')) || 0,
+      server_version_minor: Number(server_version.split('.')[1].replace(/[^0-9]/g, '')) || 0,
+      server_version_patch: Number(server_version.split('.')[2].replace(/[^0-9]/g, '')) || 0,
+      server_version_pre: pre_release,
       uptime: 0,
       totalMemory: 0,
       activeSockets: 0,
