@@ -202,6 +202,7 @@ class NStats
   toPrometheus()
   {
     var pstring = "";
+    pstring += `nstats_server_version{major="${this.data.server_version_major}", minor="${this.data.server_version_minor}", patch="${this.data.server_version_patch}", pre="${this.data.server_version_pre}"} 1 \n`
     var flatData = this._flattenObjectPrometheus(this.data, "");
     var keys = Object.keys(flatData);
 
