@@ -21,7 +21,7 @@ console.log(nstats.toJson()) // stringifyed
 console.log(nstats.toPrometheus()) //  prometheus format
 ```
 
-## Quick Start (Fastify 3.x.x)
+## Quick Start (Fastify 4.x.x)
 
 ```javascript
 // ws is a websocket server (ws.js) and httpServer is an http or https node server.
