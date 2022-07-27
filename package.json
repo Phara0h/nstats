@@ -1,6 +1,6 @@
 {
   "name": "nstats",
-  "version": "4.2.0",
+  "version": "5.0.0",
   "description": "A fast and compact way to get all your network and process stats for your node application.",
   "main": "nstats.js",
   "scripts": {
@@ -33,6 +33,6 @@
   },
   "homepage": "https://github.com/Phara0h/nstats",
   "dependencies": {
-    "fastify-plugin": "^2.3.4"
+    "fastify-plugin": "^4.0.0"
   }
 }
