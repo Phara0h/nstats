@@ -115,7 +115,7 @@ class NStats {
             this.httpServer = req.raw.connection.server;
           }
 
-          if (opts.ignore_non_router_paths && !req.routerPath) {
+          if (opts.ignore_non_router_paths && !req.routeOptions.url) {
             next();
             return;
           }
@@ -127,7 +127,7 @@ class NStats {
           var sTime = process.hrtime.bigint();
 
           res.raw.on('finish', () => {
-            req.raw.routerPath = req.routerPath;
+            req.raw.routeOptions.url = req.routeOptions.url;
             this.addWeb(req.raw, res.raw, sTime);
           });
           next();
@@ -156,7 +156,7 @@ class NStats {
 
   addWeb(req, res, sTime) {
     if (res) {
-      var routerPath = req.routerPath || '_nstats_na';
+      var routeUrl = req.routeOptions.url || '_nstats_na';
 
       if (!this.data.http_requests[req.method]) {
         this.data.http_requests[req.method] = {};
@@ -166,18 +166,18 @@ class NStats {
         this.data.http_requests[req.method][res.statusCode] = {};
       }
 
-      if (!this.data.http_requests[req.method][res.statusCode][routerPath]) {
-        this.data.http_requests[req.method][res.statusCode][routerPath] = { count: 0, response: 0 };
+      if (!this.data.http_requests[req.method][res.statusCode][routeUrl]) {
+        this.data.http_requests[req.method][res.statusCode][routeUrl] = { count: 0, response: 0 };
       }
 
-      this.data.http_requests[req.method][res.statusCode][routerPath].count++;
+      this.data.http_requests[req.method][res.statusCode][routeUrl].count++;
     }
 
     if (sTime) {
       var sTimeMS = Number(process.hrtime.bigint() - sTime) / 1000000;
 
       if (res) {
-        this.data.http_requests[req.method][res.statusCode][routerPath].response += sTimeMS;
+        this.data.http_requests[req.method][res.statusCode][routeUrl].response += sTimeMS;
       }
       this._calcOverhead(sTimeMS);
     }
