@@ -127,7 +127,7 @@ class NStats {
           var sTime = process.hrtime.bigint();
 
           res.raw.on('finish', () => {
-            req.raw.routeOptions.url = req.routeOptions.url;
+            req.raw.routeOptions = req.routeOptions;
             this.addWeb(req.raw, res.raw, sTime);
           });
           next();
