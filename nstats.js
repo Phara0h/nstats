@@ -135,7 +135,7 @@ class NStats {
         done();
       },
       {
-        fastify: '4.x',
+        fastify: '5.x',
         name: 'nstats'
       }
     );
