@@ -1,12 +1,14 @@
 const fp = require('fastify-plugin');
 
 class NStats {
-  constructor(ws, httpServer, server_version) {
+  constructor(ws, httpServer, server_version, ignored_routes) {
     this.clients = ws.clients || null;
     this.httpServer = httpServer;
     this.lastCalc = 0;
     this.ignored_routes = [];
     this.interval = 1000;
+    this.ignored_routes = ignored_routes || [];
+
     var pre_release = 0;
 
     if (server_version.indexOf('-') > -1) {
@@ -145,9 +147,20 @@ class NStats {
       if (!this.httpServer) {
         this.httpServer = req.connection.server;
       }
+
+      if (!req.url) {
+        next();
+        return;
+      }
+      if (this.ignored_routes.indexOf(req.url) > -1) {
+        next();
+        return;
+      }
+
       var sTime = process.hrtime.bigint();
 
       res.on('finish', () => {
+        req.routeOptions = { url: req.url };
         this.addWeb(req, res, sTime);
       });
       next();
@@ -412,17 +425,16 @@ nstats_responseOverheadHistogram_count ${this.data.responseOverheadHistogram.cou
 var nstats;
 const fs = require('fs');
 
-module.exports = function (ws, httpServer, server_version) {
+module.exports = function (opts = {ws:{}, httpServer:null, server_version:'0.0.0', ignored_routes:[]}) {
   if (!nstats) {
-    if (!server_version) {
+    if (!opts.server_version) {
       try {
-        server_version = require(process.cwd() + '/package.json').version;
+        opts.server_version = require(process.cwd() + '/package.json').version;
       } catch (e) {
-        server_version = '0.0.0';
+        opts.server_version = '0.0.0';
       }
     }
-
-    nstats = new NStats(ws || {}, httpServer || null, server_version);
+    nstats = new NStats(opts.ws || {}, opts.httpServer || null, opts.server_version, opts.ignored_routes || []);
   }
 
   return nstats;
