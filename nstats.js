@@ -152,6 +152,7 @@ class NStats {
         next();
         return;
       }
+      
       if (this.ignored_routes.indexOf(req.url) > -1) {
         next();
         return;
@@ -160,7 +161,7 @@ class NStats {
       var sTime = process.hrtime.bigint();
 
       res.on('finish', () => {
-        req.routeOptions = { url: req.url };
+        req.routeOptions = { url: req.route};
         this.addWeb(req, res, sTime);
       });
       next();
