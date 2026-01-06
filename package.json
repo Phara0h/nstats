@@ -1,6 +1,6 @@
 {
   "name": "nstats",
-  "version": "7.1.0",
+  "version": "7.1.1",
   "description": "A fast and compact way to get all your network and process stats for your node application.",
   "main": "nstats.js",
   "scripts": {
